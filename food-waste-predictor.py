@@ -8,10 +8,10 @@ from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QLabel, QPushButton, QHBoxLayout
 )
 
-# Função para carregar o modelo de predição
+
 def load_prediction_model():
     try:
-        model = tf.keras.models.load_model("trained_model.keras") # Substitua pelo caminho correto
+        model = tf.keras.models.load_model("trained_model.keras")
         print("Modelo carregado com sucesso.")
         return model
     except Exception as e:
@@ -19,13 +19,12 @@ def load_prediction_model():
         return None
 
 def preprocess_image(image):
-    """Pré-processa a imagem para ser compatível com o modelo."""
+
     resized_image = cv2.resize(image, (128, 128))  # Redimensiona para o tamanho usado no treinamento
     normalized_image = resized_image / 255.0  # Normaliza os valores de pixel
     return np.expand_dims(normalized_image, axis=0)  # Adiciona uma dimensão para o batch
 
 def predict_waste_with_model(model, image):
-    """Realiza a predição usando o modelo carregado."""
     if model is None:
         return "Modelo não carregado"
     processed_image = preprocess_image(image)
@@ -39,22 +38,20 @@ class FoodWastePredictor(QMainWindow):
         self.setGeometry(100, 100, 900, 700)
         self.setStyleSheet("background-color: #f5f5f5;")
 
-        # Inicializa o modelo de predição
+
         self.model = load_prediction_model()
 
-        # Layout principal
+
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         layout = QVBoxLayout(central_widget)
 
-        # Título da aplicação
-        title = QLabel("Food Waste Predictor")
+        title = QLabel("Predição de despedício de alimento")
         title.setFont(QFont("Arial", 24, QFont.Bold))
         title.setAlignment(Qt.AlignCenter)
         title.setStyleSheet("color: #333;")
         layout.addWidget(title)
 
-        # Nome dos alunos e logo
         info_layout = QHBoxLayout()
 
         authors = QLabel("Autores: Brenno Pacheco, Thallyson Gabriel, Vinícius Santos")
@@ -69,7 +66,6 @@ class FoodWastePredictor(QMainWindow):
 
         layout.addLayout(info_layout)
 
-        # Visualização da imagem
         self.image_label = QLabel(self)
         self.image_label.setAlignment(Qt.AlignCenter)
         self.image_label.setStyleSheet(
@@ -77,8 +73,7 @@ class FoodWastePredictor(QMainWindow):
         )
         layout.addWidget(self.image_label, alignment=Qt.AlignCenter)
 
-        # Botão de predição
-        self.predict_button = QPushButton("Predict Waste", self)
+        self.predict_button = QPushButton("Realizar predição", self)
         self.predict_button.setFont(QFont("Arial", 14))
         self.predict_button.setStyleSheet(
             "background-color: #4CAF50; color: white; padding: 10px; border-radius: 5px;"
@@ -87,7 +82,7 @@ class FoodWastePredictor(QMainWindow):
         layout.addWidget(self.predict_button, alignment=Qt.AlignCenter)
 
         # Resultado da predição
-        self.result_label = QLabel("Prediction result will appear here", self)
+        self.result_label = QLabel("O resultado da predição vai aparecer aqui", self)
         self.result_label.setFont(QFont("Arial", 14))
         self.result_label.setAlignment(Qt.AlignCenter)
         self.result_label.setStyleSheet("color: #333;")
@@ -104,7 +99,7 @@ class FoodWastePredictor(QMainWindow):
 
     def update_frame(self):
         if self.capture is None or not self.capture.isOpened():
-            self.result_label.setText("Camera not available. Trying to reinitialize...")
+            self.result_label.setText("Camera indisponivel. Tente novamente...")
             self.init_camera()
             return
 
@@ -117,32 +112,32 @@ class FoodWastePredictor(QMainWindow):
             pixmap = QPixmap.fromImage(qt_image)
             self.image_label.setPixmap(pixmap.scaled(640, 480, Qt.KeepAspectRatio))
         else:
-            self.result_label.setText("Failed to capture frame. Trying to reinitialize camera...")
+            self.result_label.setText("Falha ao capturar a imagem. Reiniciando cametra...")
             self.init_camera()
 
     def predict_waste(self):
         if self.capture is None or not self.capture.isOpened():
-            self.result_label.setText("Camera not available. Cannot predict.")
+            self.result_label.setText("Camera indisponivel. A predição não pode ser realixzada.")
             return
 
         ret, frame = self.capture.read()
         if ret:
             # Aqui aplicamos o modelo de predição
             prediction = predict_waste_with_model(self.model, frame)
-            self.result_label.setText(f"Prediction: {prediction}")
+            self.result_label.setText(f"Predição: {prediction}")
         else:
-            self.result_label.setText("Failed to capture frame for prediction.")
+            self.result_label.setText("Falha ao capturar o frame para a predição.")
 
     def init_camera(self):
         for i in range(10):  # Tenta os primeiros 10 índices de câmera
             self.capture = cv2.VideoCapture(i, cv2.CAP_MSMF)
             if self.capture.isOpened():
-                print(f"Camera initialized with index {i}")
+                print(f"Index da camera {i}")
                 return
             self.capture.release()
 
-        print("No camera found. Please check your camera connection.")
-        self.result_label.setText("No camera found. Please check your camera connection.")
+        print("Nenhuma camera encontrada. Checar a conexão.")
+        self.result_label.setText("Nenhuma camera encontrada. Checar a conexão.")
 
     def closeEvent(self, event):
         if self.capture is not None:
